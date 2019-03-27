@@ -1,12 +1,17 @@
 cabal-version: 2.4
 
-name: lambdachat
+name: lambdachat-client
 version: 0
 
-executable lambdachat-server
+executable lambdachat-client
   build-depends:
     base,
+    bytestring,
+    lambdachat-prelude,
     zeromq4-haskell == 0.8.0,
+
+  default-extensions:
+    OverloadedStrings
 
   default-language:
     Haskell2010
@@ -18,7 +23,10 @@ executable lambdachat-server
     -rtsopts
 
   hs-source-dirs:
-    lambdachat-server
+    src
 
   main-is:
     Main.hs
+
+  mixins:
+    base hiding (Prelude)

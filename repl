@@ -1,0 +1,21 @@
+#!/bin/bash
+
+case "$1" in
+  "client")
+    exec ghcid -c "cabal v2-repl lambdachat-client" \
+      --restart cabal.project \
+      --restart lambdachat-prelude/src/Prelude.hs \
+      --restart lambdachat-client/lambdachat-client.cabal
+    ;;
+
+  "server")
+    exec ghcid -c "cabal v2-repl lambdachat-server" \
+      --restart cabal.project \
+      --restart lambdachat-prelude/src/Prelude.hs \
+      --restart lambdachat-server/lambdachat-server.cabal
+    ;;
+
+  *)
+    echo "Usage: ./repl (client | server)"
+    ;;
+esac
