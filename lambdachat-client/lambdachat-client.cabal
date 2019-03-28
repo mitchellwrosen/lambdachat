@@ -3,15 +3,54 @@ cabal-version: 2.4
 name: lambdachat-client
 version: 0
 
-executable lambdachat-client
+library
   build-depends:
     base,
     bytestring,
+    cryptonite,
+    dhall,
+    lambdachat,
     lambdachat-prelude,
+    memory,
+    optparse-applicative,
+    safe-exceptions,
+    text,
     zeromq4-haskell == 0.8.0,
 
   default-extensions:
+    DeriveAnyClass
+    DeriveGeneric
+    DerivingStrategies
+    DuplicateRecordFields
+    InstanceSigs
+    LambdaCase
+    NamedFieldPuns
     OverloadedStrings
+    ScopedTypeVariables
+    StrictData
+    TypeApplications
+
+  default-language:
+    Haskell2010
+
+  exposed-modules:
+    LambdaChat.Client.Config
+    LambdaChat.Client.Main
+
+  ghc-options:
+    -Wall
+    -fno-warn-name-shadowing
+
+  hs-source-dirs:
+    src
+
+  mixins:
+    base hiding (Prelude)
+
+executable lambdachat-client
+  build-depends:
+    base,
+    lambdachat-client
 
   default-language:
     Haskell2010
@@ -23,10 +62,7 @@ executable lambdachat-client
     -rtsopts
 
   hs-source-dirs:
-    src
+    app
 
   main-is:
     Main.hs
-
-  mixins:
-    base hiding (Prelude)

@@ -1,6 +1,7 @@
-import Control.Concurrent (forkIO)
+module Main where
 
 import qualified System.ZMQ4 as Zmq
+
 
 main :: IO ()
 main = do
@@ -11,5 +12,6 @@ main = do
         Zmq.bind pubSocket "ipc://lambdachat-pub.sock"
 
         forever $ do
-          msg <- Zmq.receive pullSocket
-          Zmq.send pubSocket [] msg
+          bytes <- Zmq.receive pullSocket
+          print bytes
+          Zmq.send pubSocket [] bytes

@@ -1,4 +1,5 @@
 packages:
+  lambdachat
   lambdachat-client
   lambdachat-prelude
   lambdachat-server
