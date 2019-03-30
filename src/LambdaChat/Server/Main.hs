@@ -1,11 +1,14 @@
 module LambdaChat.Server.Main where
 
 import LambdaChat.Effect.Log
+import LambdaChat.Server.Effect.GenerateUUID
 import LambdaChat.Server.Effect.PublishMessage
 import LambdaChat.Server.Effect.ReceiveMessage
 
 import Control.Effect
+import Data.UUID      (UUID)
 
+import qualified Data.UUID   as UUID
 import qualified System.ZMQ4 as ZMQ
 
 
@@ -18,6 +21,7 @@ main = do
         ZMQ.bind pubSocket "ipc://lambdachat-pub.sock"
 
         doMain
+          & runGenerateUUIDC
           & runContramapLog renderLogMessage
           & runLogStdout
           & runZMQReceiver pullSocket
@@ -33,15 +37,15 @@ renderLogMessage (LogMessage msg) =
 
 doMain ::
      ( Carrier sig m
-     -- , Member (KeyValueStore _ _) sig
+     , Member (GenerateUUID UUID) sig
      , Member (Log LogMessage) sig
      , Member PublishMessage sig
      , Member ReceiveMessage sig
      )
   => m ()
-doMain = do
-  message <- receiveMessage
-  log (LogMessage "Message received")
-  publishMessage message
-  log (LogMessage "Message published")
-  doMain
+doMain =
+  forever $ do
+    message <- receiveMessage
+    uuid <- generateUUID @UUID
+    log (LogMessage ("Received message " <> UUID.toText uuid))
+    publishMessage message

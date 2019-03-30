@@ -16,6 +16,7 @@ library
     safe-exceptions,
     text,
     transformers,
+    uuid,
     zeromq4-haskell == 0.8.0,
 
   default-extensions:
@@ -51,6 +52,7 @@ library
     LambdaChat.Client.Main
     LambdaChat.Crypto
     LambdaChat.Effect.Log
+    LambdaChat.Server.Effect.GenerateUUID
     LambdaChat.Server.Effect.KeyValueStore
     LambdaChat.Server.Effect.PublishMessage
     LambdaChat.Server.Effect.ReceiveMessage
