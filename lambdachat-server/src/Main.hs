@@ -1,5 +1,7 @@
 module Main where
 
+import LambdaChat.Effect.Log
+
 import Control.Effect
 import Control.Effect.Carrier
 import Control.Effect.Sum
@@ -17,19 +19,31 @@ main = do
         ZMQ.bind pubSocket "ipc://lambdachat-pub.sock"
 
         doMain
+          & runContramapLog renderLogMessage
+          & runLogStdout
           & runZMQReceiver pullSocket
           & runZMQSender pubSocket
           & runM
 
+newtype LogMessage
+  = LogMessage Text
+
+renderLogMessage :: LogMessage -> Text
+renderLogMessage (LogMessage msg) =
+  msg
+
 doMain ::
      ( Carrier sig m
+     , Member (Log LogMessage) sig
      , Member PublishMessage sig
      , Member ReceiveMessage sig
      )
   => m ()
 doMain = do
   message <- receiveMessage
+  log (LogMessage "Message received")
   publishMessage message
+  log (LogMessage "Message published")
   doMain
 
 
@@ -44,6 +58,12 @@ data ReceiveMessage :: (Type -> Type) -> Type -> Type where
   deriving stock (Functor)
 
 instance Effect ReceiveMessage where
+  handle ::
+       Functor f
+    => f ()
+    -> (forall x. f (m x) -> n (f x))
+    -> ReceiveMessage m (m a)
+    -> ReceiveMessage n (n (f a))
   handle state handler (ReceiveMessage f) =
     ReceiveMessage (handler . (<$ state) . f)
 
@@ -62,7 +82,8 @@ receiveMessage =
 newtype ZMQReceiverC t m a
   = ZMQReceiverC { unZMQReceiverC :: ZMQ.Socket t -> m a }
   deriving stock (Functor)
-  deriving (Applicative, Monad) via (Transformers.ReaderT (ZMQ.Socket t) m)
+  deriving (Applicative, Monad, MonadIO)
+       via (Transformers.ReaderT (ZMQ.Socket t) m)
 
 runZMQReceiver :: ZMQ.Socket t -> ZMQReceiverC t m a -> m a
 runZMQReceiver =

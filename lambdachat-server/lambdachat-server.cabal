@@ -8,6 +8,7 @@ executable lambdachat-server
     base,
     cryptonite,
     fused-effects ^>= 0.3.0,
+    lambdachat,
     lambdachat-prelude,
     transformers,
     zeromq4-haskell == 0.8.0,
@@ -19,8 +20,10 @@ executable lambdachat-server
     FlexibleContexts
     FlexibleInstances
     GADTs
+    InstanceSigs
     KindSignatures
     LambdaCase
+    OverloadedStrings
     MultiParamTypeClasses
     RankNTypes
     TypeOperators

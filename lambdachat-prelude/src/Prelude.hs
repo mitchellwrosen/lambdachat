@@ -12,4 +12,4 @@ import Data.Function          as X ((&))
 import Data.Kind              as X (Type)
 import Data.Text              as X (Text)
 import GHC.Generics           as X (Generic)
-import "base" Prelude         as X
+import "base" Prelude         as X hiding (log)
