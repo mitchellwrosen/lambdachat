@@ -33,6 +33,7 @@ renderLogMessage (LogMessage msg) =
 
 doMain ::
      ( Carrier sig m
+     -- , Member (KeyValueStore _ _) sig
      , Member (Log LogMessage) sig
      , Member PublishMessage sig
      , Member ReceiveMessage sig

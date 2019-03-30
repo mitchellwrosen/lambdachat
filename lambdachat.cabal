@@ -7,6 +7,7 @@ library
   build-depends:
     base,
     bytestring,
+    containers,
     cryptonite,
     dhall,
     fused-effects ^>= 0.3.0,
@@ -18,6 +19,7 @@ library
     zeromq4-haskell == 0.8.0,
 
   default-extensions:
+    BangPatterns
     DeriveAnyClass
     DeriveFunctor
     DeriveGeneric
@@ -49,6 +51,7 @@ library
     LambdaChat.Client.Main
     LambdaChat.Crypto
     LambdaChat.Effect.Log
+    LambdaChat.Server.Effect.KeyValueStore
     LambdaChat.Server.Effect.PublishMessage
     LambdaChat.Server.Effect.ReceiveMessage
     LambdaChat.Server.Main
