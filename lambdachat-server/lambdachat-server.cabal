@@ -7,11 +7,24 @@ executable lambdachat-server
   build-depends:
     base,
     cryptonite,
+    fused-effects ^>= 0.3.0,
     lambdachat-prelude,
+    transformers,
     zeromq4-haskell == 0.8.0,
 
   default-extensions:
+    DeriveFunctor
+    DerivingStrategies
+    DerivingVia
+    FlexibleContexts
+    FlexibleInstances
+    GADTs
+    KindSignatures
     LambdaCase
+    MultiParamTypeClasses
+    RankNTypes
+    TypeOperators
+    UndecidableInstances
 
   default-language:
     Haskell2010
