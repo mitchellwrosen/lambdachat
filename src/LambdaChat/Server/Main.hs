@@ -1,12 +1,15 @@
 module LambdaChat.Server.Main where
 
 import LambdaChat.Effect.Log
+import LambdaChat.Proto.Message
 import LambdaChat.Server.Chat
 import LambdaChat.Server.Effect.ChatStorage
 import LambdaChat.Server.Effect.GenerateUUID
 import LambdaChat.Server.Effect.PublishMessage
 import LambdaChat.Server.Effect.ReceiveMessage
 import LambdaChat.Server.LogMessage
+
+import qualified Capnp.Gen.Protocol.Message.Pure as LambdaChat.Capnp
 
 import Control.Effect
 import Data.Time      (getCurrentTime)
@@ -49,20 +52,35 @@ doMain ::
   => m ()
 doMain =
   forever $ do
-    message <- receiveMessage
-    now <- liftIO getCurrentTime
-    uuid <- generateUUID @UUID
+    bytes <- receiveMessage
 
-    let
-      chat :: Chat
-      chat =
-        Chat
-          { uuid = uuid
-          , timestamp = now
-          , message = message
-          }
+    case decodeProtoMessage bytes of
+      Nothing ->
+        pure ()
 
-    log chat
-    storeChat chat
+      Just message ->
+        case message of
+          LambdaChat.Capnp.Message
+            { chat =
+                LambdaChat.Capnp.ChatMessage
+                  { message =
+                      message
+                  }
+            } -> do
 
-    publishMessage message
+            now <- liftIO getCurrentTime
+            uuid <- generateUUID @UUID
+
+            let
+              chat :: Chat
+              chat =
+                Chat
+                  { uuid = uuid
+                  , timestamp = now
+                  , message = message
+                  }
+
+            log chat
+            storeChat chat
+
+            publishMessage message

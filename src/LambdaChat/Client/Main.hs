@@ -4,6 +4,9 @@ module LambdaChat.Client.Main
 
 import LambdaChat.Client.Config
 import LambdaChat.Crypto
+import LambdaChat.Proto.Message
+
+import qualified Capnp.Gen.Protocol.Message.Pure as LambdaChat.Capnp
 
 import Control.Concurrent (forkIO)
 import Crypto.Random      (MonadRandom(..))
@@ -55,7 +58,18 @@ main = do
             ciphertext :: ByteString <-
               encryptMessage identity peer message
 
-            ZMQ.send pushSocket [] ciphertext
+            let
+              message :: LambdaChat.Capnp.Message
+              message =
+                LambdaChat.Capnp.Message
+                  { chat =
+                      LambdaChat.Capnp.ChatMessage
+                        { message =
+                            ciphertext
+                        }
+                  }
+
+            for_ (encodeProtoMessage message) (ZMQ.send pushSocket [])
 
 encryptMessage ::
      MonadRandom m

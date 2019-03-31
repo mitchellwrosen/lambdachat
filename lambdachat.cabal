@@ -7,6 +7,7 @@ library
   build-depends:
     base,
     bytestring,
+    capnp ^>= 0.4.0,
     containers,
     cryptonite,
     dhall,
@@ -14,6 +15,7 @@ library
     generic-lens,
     lens,
     memory,
+    monad-ste,
     optparse-applicative,
     safe-exceptions,
     text,
@@ -54,11 +56,15 @@ library
     Haskell2010
 
   exposed-modules:
+    Capnp.Gen.ById.Xfe94a8fd9f3ecbb7
+    Capnp.Gen.Protocol.Message
+    Capnp.Gen.Protocol.Message.Pure
     LambdaChat.Client.Config
     LambdaChat.Client.Main
     LambdaChat.Crypto
     LambdaChat.Effect.FirstOrder
     LambdaChat.Effect.Log
+    LambdaChat.Proto.Message
     LambdaChat.Server.Chat
     LambdaChat.Server.Effect.ChatStorage
     LambdaChat.Server.Effect.GenerateUUID
