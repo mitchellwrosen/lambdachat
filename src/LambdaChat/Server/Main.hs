@@ -1,14 +1,18 @@
 module LambdaChat.Server.Main where
 
 import LambdaChat.Effect.Log
+import LambdaChat.Server.Chat
+import LambdaChat.Server.Effect.ChatStorage
 import LambdaChat.Server.Effect.GenerateUUID
 import LambdaChat.Server.Effect.PublishMessage
 import LambdaChat.Server.Effect.ReceiveMessage
+import LambdaChat.Server.LogMessage
 
 import Control.Effect
+import Data.Time      (getCurrentTime)
 import Data.UUID      (UUID)
 
-import qualified Data.UUID   as UUID
+import qualified Data.Map    as Map
 import qualified System.ZMQ4 as ZMQ
 
 
@@ -20,32 +24,45 @@ main = do
         ZMQ.bind pullSocket "ipc://lambdachat-pull.sock"
         ZMQ.bind pubSocket "ipc://lambdachat-pub.sock"
 
-        doMain
-          & runGenerateUUIDC
-          & runContramapLog renderLogMessage
-          & runLogStdout
-          & runZMQReceiver pullSocket
-          & runZMQSender pubSocket
-          & runM
+        (chats, ()) <-
+          doMain
+            & runMapChatStorage Map.empty      -- ChatStorage
+            & runGenerateUUID                  -- GenerateUUID
+            & runContramapLog chatToLogMessage -- Log Chat ==> Log LogMessage
+            & runContramapLog renderLogMessage -- Log LogMessage ==> Log Text
+            & runLogStdout                     -- Log Text
+            & runZMQReceiver pullSocket        -- ReceiveMessage
+            & runZMQSender pubSocket           -- PublishMessage
+            & runM
 
-newtype LogMessage
-  = LogMessage Text
-
-renderLogMessage :: LogMessage -> Text
-renderLogMessage (LogMessage msg) =
-  msg
+        print chats
 
 doMain ::
      ( Carrier sig m
+     , Member ChatStorage sig
      , Member (GenerateUUID UUID) sig
-     , Member (Log LogMessage) sig
+     , Member (Log Chat) sig
      , Member PublishMessage sig
      , Member ReceiveMessage sig
+     , MonadIO m
      )
   => m ()
 doMain =
   forever $ do
     message <- receiveMessage
+    now <- liftIO getCurrentTime
     uuid <- generateUUID @UUID
-    log (LogMessage ("Received message " <> UUID.toText uuid))
+
+    let
+      chat :: Chat
+      chat =
+        Chat
+          { uuid = uuid
+          , timestamp = now
+          , message = message
+          }
+
+    log chat
+    storeChat chat
+
     publishMessage message

@@ -11,6 +11,8 @@ library
     cryptonite,
     dhall,
     fused-effects ^>= 0.3.0,
+    generic-lens,
+    lens,
     memory,
     optparse-applicative,
     safe-exceptions,
@@ -22,6 +24,7 @@ library
 
   default-extensions:
     BangPatterns
+    DataKinds
     DeriveAnyClass
     DeriveFunctor
     DeriveGeneric
@@ -37,6 +40,7 @@ library
     LambdaCase
     MultiParamTypeClasses
     NamedFieldPuns
+    OverloadedLabels
     OverloadedStrings
     QuantifiedConstraints
     RankNTypes
@@ -61,6 +65,7 @@ library
     LambdaChat.Server.Effect.KeyValueStore
     LambdaChat.Server.Effect.PublishMessage
     LambdaChat.Server.Effect.ReceiveMessage
+    LambdaChat.Server.LogMessage
     LambdaChat.Server.Main
     Prelude
 

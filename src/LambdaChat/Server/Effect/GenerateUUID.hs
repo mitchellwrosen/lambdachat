@@ -3,7 +3,7 @@ module LambdaChat.Server.Effect.GenerateUUID
   , generateUUID
     -- * Carriers
   , GenerateUUIDC
-  , runGenerateUUIDC
+  , runGenerateUUID
   ) where
 
 import LambdaChat.Effect.FirstOrder
@@ -43,8 +43,8 @@ newtype GenerateUUIDC m a
   = GenerateUUIDC (m a)
   deriving newtype (Applicative, Functor, Monad, MonadIO)
 
-runGenerateUUIDC :: GenerateUUIDC m a -> m a
-runGenerateUUIDC (GenerateUUIDC m) =
+runGenerateUUID :: GenerateUUIDC m a -> m a
+runGenerateUUID (GenerateUUIDC m) =
   m
 
 instance
@@ -59,7 +59,7 @@ instance
   eff = \case
     L (GenerateUUID k) ->
       GenerateUUIDC $ do
-        liftIO UUID.nextRandom >>= runGenerateUUIDC . k
+        liftIO UUID.nextRandom >>= runGenerateUUID . k
 
     R other ->
-      GenerateUUIDC (eff (handlePure runGenerateUUIDC other))
+      GenerateUUIDC (eff (handlePure runGenerateUUID other))
