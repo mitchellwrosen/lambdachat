@@ -1,5 +1,7 @@
 module LambdaChat.Effect.Log where
 
+import LambdaChat.Effect.FirstOrder
+
 import Control.Effect
 import Control.Effect.Carrier
 import Control.Effect.Sum
@@ -12,27 +14,13 @@ import qualified Data.Text.IO               as Text
 -- Log effect
 --------------------------------------------------------------------------------
 
-data Log :: Type -> (Type -> Type) -> Type -> Type where
+data Log (a :: Type) (m :: Type -> Type) (k :: Type) where
   Log ::
        a
     -> k
     -> Log a m k
   deriving stock (Functor)
-
-instance Effect (Log a) where
-  handle ::
-       Functor f
-    => f ()
-    -> (forall x. f (m x) -> n (f x))
-    -> Log a m (m b)
-    -> Log a n (n (f b))
-  handle state handler (Log x k) =
-    Log x (handler (k <$ state))
-
-instance HFunctor (Log a) where
-  hmap :: (forall x. m x -> n x) -> Log a m k -> Log a n k
-  hmap _ (Log x k) =
-    Log x k
+  deriving (HFunctor, Effect) via (FirstOrderEffect (Log a))
 
 log ::
      ( Carrier sig m
@@ -43,14 +31,6 @@ log ::
 log x =
   send (Log x (pure ()))
 
--- contralog ::
---      ( Carrier sig m
---      , Member (Log a) sig
---      )
---   => (a -> b)
---   -> ()
---   -> m x
--- contralog f = undefined
 
 --------------------------------------------------------------------------------
 -- Log effect carriers

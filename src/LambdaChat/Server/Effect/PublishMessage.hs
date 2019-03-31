@@ -6,6 +6,8 @@ module LambdaChat.Server.Effect.PublishMessage
   , runZMQSender
   ) where
 
+import LambdaChat.Effect.FirstOrder
+
 import Control.Effect
 import Control.Effect.Carrier
 import Control.Effect.Sum
@@ -18,15 +20,10 @@ data PublishMessage :: (Type -> Type) -> Type -> Type where
        ByteString
     -> k
     -> PublishMessage m k
+
   deriving stock (Functor)
-
-instance Effect PublishMessage where
-  handle state handler (PublishMessage message k) =
-    PublishMessage message (handler (k <$ state))
-
-instance HFunctor PublishMessage where
-  hmap _ (PublishMessage m k) =
-    PublishMessage m k
+  deriving (HFunctor, Effect)
+       via (FirstOrderEffect PublishMessage)
 
 publishMessage ::
      ( Carrier sig m

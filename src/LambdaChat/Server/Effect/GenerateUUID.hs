@@ -6,6 +6,8 @@ module LambdaChat.Server.Effect.GenerateUUID
   , runGenerateUUIDC
   ) where
 
+import LambdaChat.Effect.FirstOrder
+
 import Control.Effect
 import Control.Effect.Carrier
 import Control.Effect.Sum
@@ -14,30 +16,14 @@ import Data.UUID (UUID)
 import qualified Data.UUID.V4 as UUID
 
 
-data GenerateUUID :: Type -> (Type -> Type) -> Type -> Type where
+data GenerateUUID (uuid :: Type) (m :: Type -> Type) (k :: Type) where
   GenerateUUID ::
        (uuid -> a)
     -> GenerateUUID uuid m a
 
   deriving stock (Functor)
-
-instance Effect (GenerateUUID uuid) where
-  handle ::
-       Functor f
-    => f ()
-    -> (forall x. f (m x) -> n (f x))
-    -> GenerateUUID uuid m (m a)
-    -> GenerateUUID uuid n (n (f a))
-  handle state handler (GenerateUUID k) =
-    GenerateUUID (handler . (<$ state) . k)
-
-instance HFunctor (GenerateUUID uuid) where
-  hmap ::
-       (forall x. m x -> n x)
-    -> GenerateUUID uuid m a
-    -> GenerateUUID uuid n a
-  hmap _ =
-    coerce
+  deriving (HFunctor, Effect)
+       via (FirstOrderEffect (GenerateUUID uuid))
 
 generateUUID ::
      forall uuid m sig.

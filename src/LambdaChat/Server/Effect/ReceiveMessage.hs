@@ -6,6 +6,8 @@ module LambdaChat.Server.Effect.ReceiveMessage
   , runZMQReceiver
   ) where
 
+import LambdaChat.Effect.FirstOrder
+
 import Control.Effect
 import Control.Effect.Carrier
 import Control.Effect.Sum
@@ -18,21 +20,10 @@ data ReceiveMessage :: (Type -> Type) -> Type -> Type where
   ReceiveMessage ::
        (ByteString -> k)
     -> ReceiveMessage m k
+
   deriving stock (Functor)
-
-instance Effect ReceiveMessage where
-  handle ::
-       Functor f
-    => f ()
-    -> (forall x. f (m x) -> n (f x))
-    -> ReceiveMessage m (m a)
-    -> ReceiveMessage n (n (f a))
-  handle state handler (ReceiveMessage f) =
-    ReceiveMessage (handler . (<$ state) . f)
-
-instance HFunctor ReceiveMessage where
-  hmap _ (ReceiveMessage f) =
-    ReceiveMessage f
+  deriving (HFunctor, Effect)
+       via (FirstOrderEffect ReceiveMessage)
 
 receiveMessage ::
      ( Carrier sig m

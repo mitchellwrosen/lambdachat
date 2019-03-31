@@ -7,6 +7,8 @@ module LambdaChat.Server.Effect.KeyValueStore
   , runMapKeyValueStore
   ) where
 
+import LambdaChat.Effect.FirstOrder
+
 import Control.Effect
 import Control.Effect.Carrier
 import Control.Effect.State   (StateC(..))
@@ -15,7 +17,7 @@ import Control.Effect.Sum
 import qualified Data.Map as Map
 
 
-data KeyValueStore :: Type -> Type -> (Type -> Type) -> Type -> Type where
+data KeyValueStore (k :: Type) (v :: Type) (m :: Type -> Type) (a :: Type) where
   Get ::
        k
     -> (Maybe v -> a)
@@ -28,28 +30,8 @@ data KeyValueStore :: Type -> Type -> (Type -> Type) -> Type -> Type where
     -> KeyValueStore k v m a
 
   deriving stock (Functor)
-
-instance Effect (KeyValueStore k v) where
-  handle ::
-       Functor f
-    => f ()
-    -> (forall x. f (m x) -> n (f x))
-    -> KeyValueStore k v m (m a)
-    -> KeyValueStore k v n (n (f a))
-  handle state handler = \case
-    Get key next ->
-      Get key (handler . (<$ state) . next)
-
-    Put key value next ->
-      Put key value (handler (next <$ state))
-
-instance HFunctor (KeyValueStore k v) where
-  hmap ::
-       (forall x. m x -> n x)
-    -> KeyValueStore k v m a
-    -> KeyValueStore k v n a
-  hmap _ =
-    coerce
+  deriving (HFunctor, Effect)
+       via (FirstOrderEffect (KeyValueStore k v))
 
 kvStoreGet ::
      ( Carrier sig m

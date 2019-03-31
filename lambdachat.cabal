@@ -15,6 +15,7 @@ library
     optparse-applicative,
     safe-exceptions,
     text,
+    time,
     transformers,
     uuid,
     zeromq4-haskell == 0.8.0,
@@ -37,6 +38,7 @@ library
     MultiParamTypeClasses
     NamedFieldPuns
     OverloadedStrings
+    QuantifiedConstraints
     RankNTypes
     ScopedTypeVariables
     StrictData
@@ -51,7 +53,10 @@ library
     LambdaChat.Client.Config
     LambdaChat.Client.Main
     LambdaChat.Crypto
+    LambdaChat.Effect.FirstOrder
     LambdaChat.Effect.Log
+    LambdaChat.Server.Chat
+    LambdaChat.Server.Effect.ChatStorage
     LambdaChat.Server.Effect.GenerateUUID
     LambdaChat.Server.Effect.KeyValueStore
     LambdaChat.Server.Effect.PublishMessage
