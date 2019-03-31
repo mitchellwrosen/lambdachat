@@ -1,3 +1,16 @@
+-- | Simple public-key crpytography wrappers.
+--
+-- The gist of it:
+--
+--   Ciphertext = Encrypt (MyPrivateKey,   YourPublicKey, Plaintext)
+--   Plaintext  = Decrypt (YourPrivateKey, MyPublicKey,   Ciphertext)
+--
+-- such that Ciphertext does not disclose any information about the message
+-- (Plaintext) nor the recipient's identity (YourPublicKey) to an eavesdropper.
+--
+-- This is accomplished by generating an ephemeral key pair to encrypt and
+-- sign the sender's true identity, which is used to encrypt and sign the
+-- message.
 module LambdaChat.Crypto
   ( -- * Private key
     PrivateKey
@@ -20,7 +33,8 @@ module LambdaChat.Crypto
 import Control.Monad  (guard)
 import Crypto.Error
 import Crypto.Random
-import Data.ByteArray (ScrubbedBytes)
+import Data.ByteArray (Bytes, ScrubbedBytes)
+import Data.Ord       (comparing)
 
 import qualified Crypto.Cipher.ChaChaPoly1305 as ChaCha20Poly1305
 import qualified Crypto.Hash                  as Hash
@@ -57,7 +71,13 @@ decodeBase64PrivateKey =
 
 
 newtype PublicKey
-  = PublicKey Curve25519.PublicKey
+  = PublicKey { unPublicKey :: Curve25519.PublicKey }
+  deriving newtype (Eq)
+
+instance Ord PublicKey where
+  compare =
+    comparing
+      (ByteArray.convert @_ @Bytes . unPublicKey)
 
 instance Show PublicKey where
   show =
@@ -107,6 +127,7 @@ encrypt ::
   -> PublicKey
      -- ^ Recipient's public key
   -> ByteString
+     -- ^ Plaintext
   -> m ByteString
 encrypt (PrivateKey privateKey) (PublicKey publicKey) plaintext = do
   nonceBytes :: ByteArray.Bytes <-
@@ -147,6 +168,7 @@ decrypt ::
   -> PublicKey
      -- ^ Sender's public key
   -> ByteString
+     -- ^ Ciphertext
   -> Maybe ByteString
 decrypt (PrivateKey privateKey) (PublicKey publicKey) payload0 = do
   let

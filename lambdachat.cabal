@@ -48,6 +48,7 @@ library
     RankNTypes
     ScopedTypeVariables
     StrictData
+    TupleSections
     TypeApplications
     TypeOperators
     UndecidableInstances
@@ -86,7 +87,7 @@ library
     base hiding (Prelude),
     base (Prelude as PreludeFromBase)
 
-executable lambdachat-client
+executable lambdachat
   build-depends:
     lambdachat,
 

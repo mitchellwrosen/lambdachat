@@ -14,14 +14,21 @@ import qualified Dhall
 data UnparsedConfig
   = UnparsedConfig
   { identity :: Maybe Text
-  , peers :: [Text]
+  , peers :: [UnparsedPeer]
+  } deriving stock (Generic)
+    deriving anyclass (Dhall.Interpret)
+
+data UnparsedPeer
+  = UnparsedPeer
+  { name :: Text
+  , identity :: Text
   } deriving stock (Generic)
     deriving anyclass (Dhall.Interpret)
 
 data Config
   = Config
   { identity :: Maybe PrivateKey
-  , peers :: [PublicKey]
+  , peers :: [(Text, PublicKey)]
   }
 
 newtype InvalidPublicKey
@@ -48,8 +55,12 @@ parseConfig configFile =
 parseConfig_ :: UnparsedConfig -> Either SomeException Config
 parseConfig_ UnparsedConfig { identity, peers } = do
   identity <- parsePrivateKey identity
-  peers <- traverse parsePublicKey peers
+  peers <- traverse parsePeer peers
   Right Config { identity, peers }
+
+parsePeer :: UnparsedPeer -> Either SomeException (Text, PublicKey)
+parsePeer UnparsedPeer { name, identity } =
+  (name,) <$> parsePublicKey identity
 
 parsePublicKey :: Text -> Either SomeException PublicKey
 parsePublicKey bytes =
